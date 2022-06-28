@@ -1,0 +1,222 @@
+// Every time you make changes to this file, run `make proto-gen` to re-generate protobuf files.
+
+syntax = "proto3";
+
+message Dns {
+	message Ips {
+		repeated string values = 1;
+	}
+
+	repeated string servers = 1;
+	map<string, Ips> hosts = 3;
+}
+
+message Log {
+	enum Level {
+		INFO = 0;
+		TRACE = 1;
+		DEBUG = 2;
+		WARN = 3;
+		ERROR = 4;
+	}
+
+	enum Output {
+		CONSOLE = 0;
+		FILE = 1;
+	}
+
+	Level level = 1;
+	Output output = 2;
+	string output_file = 3;
+}
+
+message TunInboundSettings {
+	int32 fd = 1;
+	bool auto = 9;
+	string name = 2;
+	string address = 3;
+	string gateway = 4;
+	string netmask = 5;
+	int32 mtu = 6;
+	repeated string fake_dns_exclude = 7;
+	repeated string fake_dns_include = 8;
+}
+
+message ShadowsocksInboundSettings {
+	string method = 1;
+	string password = 2;
+}
+
+message TrojanInboundSettings {
+	repeated string passwords = 1;
+}
+
+message WebSocketInboundSettings {
+	string path = 1;
+}
+
+message AMuxInboundSettings {
+	repeated string actors = 1;
+}
+
+message QuicInboundSettings {
+	string certificate = 1;
+	string certificate_key = 2;
+}
+
+message TlsInboundSettings {
+	string certificate = 1;
+	string certificate_key = 2;
+}
+
+message ChainInboundSettings {
+	repeated string actors = 1;
+}
+
+message Inbound {
+	string tag = 1;
+	string protocol = 2; // TODO use enum
+	string address = 3;
+	uint32 port = 4;
+	bytes settings = 5;
+}
+
+message RedirectOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+}
+
+message SocksOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+}
+
+message ShadowsocksOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+	string method = 3; // TODO use enum
+	string password = 4;
+}
+
+message TrojanOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+	string password = 3;
+}
+
+message TlsOutboundSettings {
+	string server_name = 1;
+	repeated string alpn = 2;
+	string certificate = 3;
+}
+
+message WebSocketOutboundSettings {
+	string path = 1;
+	map<string, string> headers = 2;
+}
+
+message TryAllOutboundSettings {
+	repeated string actors = 1;
+	uint32 delay_base = 2;
+}
+
+message StaticOutboundSettings {
+	repeated string actors = 1;
+	string method = 2;
+}
+
+message AMuxOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+	repeated string actors = 3;
+	uint32 max_accepts = 4;
+	uint32 concurrency = 5;
+}
+
+message QuicOutboundSettings {
+	string address = 1;
+	uint32 port = 2;
+	string server_name = 3;
+	string certificate = 4;
+}
+
+message VMessOutboundSettings {
+    string address = 1;
+    uint32 port = 2;
+    string uuid = 3;
+    string security = 4;
+}
+
+message ChainOutboundSettings {
+	repeated string actors = 1;
+}
+
+message FailOverOutboundSettings {
+	repeated string actors = 1;
+	uint32 fail_timeout = 2;
+	// if health check is disabled, it will always perform failover
+	// to other actors dispite whatever failover option is set.
+	bool health_check = 3;
+	uint32 check_interval = 4;
+	bool failover = 5;
+	bool fallback_cache = 6;
+	uint32 cache_size = 7;
+	uint32 cache_timeout = 8;
+	string last_resort = 9;
+	uint32 health_check_timeout = 10;
+	uint32 health_check_delay = 11;
+}
+
+message SelectOutboundSettings {
+	repeated string actors = 1;
+}
+
+message PluginOutboundSettings {
+	string path = 1;
+	string args = 2;
+}
+
+message Outbound {
+	string tag = 1;
+	string protocol = 2; // TODO use enum
+	bytes settings = 4;
+}
+
+message Router {
+	message Rule {
+		message Domain {
+			enum Type {
+				PLAIN = 0;
+				DOMAIN = 1;
+				FULL = 2;
+			}
+
+			Type type = 1;
+			string value = 2;
+		}
+
+		message Mmdb {
+			string file = 1;
+			string country_code = 2;
+		}
+
+		string target_tag = 1;
+		repeated Domain domains = 2;
+		repeated string ip_cidrs = 3;
+		repeated Mmdb mmdbs = 4;
+		repeated string port_ranges = 5;
+		repeated string networks = 6;
+		repeated string inbound_tags = 7;
+	}
+
+	repeated Rule rules = 1;
+	bool domain_resolve = 2;
+}
+
+message Config {
+	Log log = 1;
+	repeated Inbound inbounds = 2;
+	repeated Outbound outbounds = 3;
+	Router router = 4;
+	Dns dns = 5;
+}
